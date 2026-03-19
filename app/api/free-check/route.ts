@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import Database from 'better-sqlite3';
-import path from 'path';
+import { prisma } from '@/lib/prisma';
 
 const ADMIN_EMAIL = 'sergeybirioukov@gmail.com';
-
-// Use raw SQLite directly — Prisma 7 BetterSQLite3 adapter has issues with count/date queries
-function getDb() {
-  return new Database(path.join(process.cwd(), 'logiq.db'));
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,16 +20,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const fingerprint: string | null = body?.fingerprint ?? null;
 
-    const db = getDb();
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // Check IP usage in last 24h
-    const ipRow = db.prepare(
-      `SELECT COUNT(*) as cnt FROM FreeUsage WHERE ip = ? AND createdAt >= ?`
-    ).get(ip, oneDayAgo) as { cnt: number };
+    const ipCount = await prisma.freeUsage.count({
+      where: { ip, createdAt: { gte: oneDayAgo } },
+    });
 
-    if (ipRow.cnt >= 1) {
-      db.close();
+    if (ipCount >= 1) {
       return NextResponse.json({
         allowed: false,
         reason: "You've already used your free analysis today. Come back tomorrow or upgrade for unlimited access.",
@@ -44,12 +36,11 @@ export async function POST(req: NextRequest) {
 
     // Check fingerprint lifetime cap (3 total)
     if (fingerprint) {
-      const fpRow = db.prepare(
-        `SELECT COUNT(*) as cnt FROM FreeUsage WHERE fingerprint = ?`
-      ).get(fingerprint) as { cnt: number };
+      const fpCount = await prisma.freeUsage.count({
+        where: { fingerprint },
+      });
 
-      if (fpRow.cnt >= 3) {
-        db.close();
+      if (fpCount >= 3) {
         return NextResponse.json({
           allowed: false,
           reason: 'Free limit reached. Upgrade to continue analyzing logs.',
@@ -58,12 +49,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Record usage
-    const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    db.prepare(
-      `INSERT INTO FreeUsage (id, ip, fingerprint, createdAt) VALUES (?, ?, ?, ?)`
-    ).run(id, ip, fingerprint, new Date().toISOString());
+    await prisma.freeUsage.create({
+      data: { ip, fingerprint },
+    });
 
-    db.close();
     return NextResponse.json({ allowed: true });
 
   } catch (e) {

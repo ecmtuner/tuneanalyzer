@@ -3,15 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
   id             String     @id @default(cuid())
   email          String     @unique
   password       String
-  plan           String     @default("free")   // free | onetime | basic | pro
-  analysisCredits Int       @default(0)         // for onetime purchases + monthly allowance
+  plan           String     @default("free")
+  analysisCredits Int       @default(0)
   createdAt      DateTime   @default(now())
   logs           LogEntry[]
 }
