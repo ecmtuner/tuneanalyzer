@@ -99,7 +99,7 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {['free', 'onetime', 'basic', 'pro'].map((plan) => (
+              {['free', 'onetime', 'basic', 'pro'].map((plan: string) => (
                 <tr key={plan} className="hover:bg-gray-800/50">
                   <td className="py-2"><PlanBadge plan={plan} /></td>
                   <td className="py-2 text-right text-white">{(planMap[plan] ?? 0).toLocaleString()}</td>

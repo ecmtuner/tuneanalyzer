@@ -65,11 +65,11 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
   const totalAnalyses = user._count.logs
   const avgScore =
     user.logs.length > 0
-      ? Math.round(user.logs.reduce((sum, l) => sum + l.score, 0) / user.logs.length)
+      ? Math.round(user.logs.reduce((sum: number, l: any) => sum + l.score, 0) / user.logs.length)
       : null
   const bestScore =
     user.logs.length > 0
-      ? Math.max(...user.logs.map((l) => l.score))
+      ? Math.max(...user.logs.map((l: any) => l.score))
       : null
 
   return (
