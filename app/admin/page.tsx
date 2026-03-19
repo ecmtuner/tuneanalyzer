@@ -147,7 +147,7 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {recentSignups.map((user) => (
+              {recentSignups.map((user: any) => (
                 <tr key={user.id} className="hover:bg-gray-800/50 transition-colors">
                   <td className="px-5 py-3">
                     <Link href={`/admin/users/${user.id}`} className="text-white hover:text-blue-400 transition-colors">

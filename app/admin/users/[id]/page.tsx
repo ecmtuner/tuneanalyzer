@@ -149,7 +149,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {user.logs.map((log) => (
+              {user.logs.map((log: any) => (
                 <tr key={log.id} className="hover:bg-gray-800/50 transition-colors">
                   <td className="px-5 py-3 text-white uppercase">{log.platform}</td>
                   <td className="px-5 py-3 text-gray-300 uppercase">{log.fuel}</td>
