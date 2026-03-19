@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  password       String
+  plan           String     @default("free")   // free | onetime | basic | pro
+  analysisCredits Int       @default(0)         // for onetime purchases + monthly allowance
+  createdAt      DateTime   @default(now())
+  logs           LogEntry[]
+}
+
+model FreeUsage {
+  id          String   @id @default(cuid())
+  ip          String
+  fingerprint String?
+  createdAt   DateTime @default(now())
+}
+
+model LogEntry {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  platform   String
+  fuel       String
+  motor      String
+  score      Int
+  grade      String
+  resultJson String
+  createdAt  DateTime @default(now())
+}
