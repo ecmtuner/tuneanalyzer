@@ -5,10 +5,10 @@ RUN apt-get update && apt-get install -y openssl python3 make g++ && rm -rf /var
 WORKDIR /app
 
 COPY package.json ./
+# postinstall runs prisma generate automatically
 RUN npm install
 
 COPY . .
-RUN npx prisma generate
 RUN npm run build
 
 EXPOSE 3000
